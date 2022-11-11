@@ -1,4 +1,4 @@
-![](img/header.png) Conference survival kit in R
+![](images/header.png) Conference survival kit in R
 ================
 Brendan Clarke, NHS Education for Scotland, <brendan.clarke2@nhs.scot>
 2022-11-11
@@ -19,3 +19,5 @@ Scotland, so the colours, layout, logos, etc have been tweaked to fit.
 1.  A poster template, with NHS-ish branding, based on
     [posterdown_betterport](https://github.com/brentthorne/posterdown/wiki/posterdown_betterport)
     (added 11/11/2022)
+
+![](images/paste-C6E4DE0C.png)
