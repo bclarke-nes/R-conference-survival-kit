@@ -1,0 +1,161 @@
+---
+title: "**It can be done, and the results are pretty great**"
+author: 
+  - name: Brendan Clarke
+    affil: 1
+    email: brendan.clarke2@nhs.scot
+    main: true
+affiliation:
+  - num: 1
+    address: Digital Learning Lead, NHS Education for Scotland
+date: "2022-11-11"
+# styling
+poster_height: "46.8in"
+poster_width: "33.1in"
+primary_colour: "#124987"
+secondary_colour: "#009FE3"
+accent_colour: "#F1AF00"
+# main findings
+main_fontfamily: "Garamond"
+main_textcol: "#FFFFFF"
+main_textsize: "230px"
+main_findings: "**Doing a poster in R using posterdown_betterport**"
+logoleft_name: ""
+# logoright_name: img/nhsh.png
+#---POSTER BODY OPTIONS---#
+body_textsize: "45px"
+body_textcol: "#000000"
+title_textsize: "100px"
+caption_textsize: "40px"
+reference_textsize: "40px"
+affiliation_textsize: "40px"
+bibliography: data/references.bib
+output: 
+  posterdown::posterdown_betterport:
+  self_contained: TRUE
+knit: pagedown::chrome_print
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+library(pacman)
+p_load(tidyverse, waffle, ggsankey,lubridate,kableExtra)
+```
+
+# Introduction
+
+Drawing posters by hand is no fun, particularly if you don't have access to heavyweight design software. Assuming that your presentation is largely data-driven, writing a poster in Rmarkdown is a pretty great alternative, that produces a clean design with minimal faffing about.
+
+# How-to
+
+The two key elements to this approach are:
+
+1.  The posterdown package [@posterdown], particularly the betterport poster template, to produce an HTML version of the poster from Rmarkdown
+
+2.  then us pagedown::chrome_print to turn that HTML output into a pdf
+
+You'll need a few things before you begin:
+
+-   a couple of hundred words of text. The key message from a design perspective is to keep things **concise**.
+
+-   some idea about the visualisations and data summaries you want to include
+
+-   an appropriate logo for branding. It's good practice to include your organisation's logo. Most NHS boards logos are available on the [NHS Scotland Corporate Identity](https://www.nhsscotlandci.scot.nhs.uk/digital-assets/nhs-scotland/) site.
+
+-   finally, an understanding of your requirements (size, orientation, etc). Nothing worse than working hard to put an elegant poster together, and then having to change everything at the last minute to fit the requirements of the conference.
+
+# The process
+
+Posters are built like any other Rmarkdown document. The only additional thing to worry about are the YAML options that are specific to the posterdown package. See the summary [on the package wiki](https://github.com/brentthorne/posterdown/wiki).
+
+The most complicated part is calibrating the text size to fit your text. We're currently working on a way of simplifying this so that the content can be adjusted to fit whatever your output format is.
+
+This template is set-up for A0 posters, and it uses (roughly) the NHSS colour palette to harmonise the appearance of visualisations.
+
+# Result
+
+To include graphs, work as you would in any other Rmarkdown document, with R code in chunks. Some useful suggestions:
+
+## Waffle plots
+
+Although these are effectively just pie charts, they're still good for showing the distribution of discrete characteristics in small populations. Use the waffle package [@waffle] to produce them.
+
+```{r out.width='70%', fig.cap='Example of an analyst population', fig.align='center'}
+data <- tribble(
+  ~Classification, ~n,
+  "Busy", "32", 
+  "Confused", "19",
+  "Thinking", "22",
+  "Other", "15"
+)
+
+waffle(data %>% mutate(n = as.numeric(n)) %>% deframe(), rows=8) +
+  scale_fill_manual(values = c("#009FE3", "#124987", "#009B55","#F1AF00"), name="") +
+  theme(legend.position="bottom", text = element_text(size = 20))
+
+```
+
+## Sankey plots
+
+These are great for showing flow through a system. One serious drawback though is that the ggsankey package is rather hard to understand [@ggsankey].
+
+```{r out.width='100%', fig.cap='After-work outcomes'}
+read_csv("data/sankey.csv")  %>%
+  make_long(Day, Evening, Bedtime) %>%
+  ggplot(aes(x = x, 
+             next_x = next_x, 
+             node = node, 
+             next_node = next_node,
+             label = node)) +
+  geom_sankey(flow.alpha = 0.3, fill = "#009FE3") +
+  geom_sankey_label(size = 4, color = "black", fill="#EAD9AF", space=20) +
+  theme_void() +
+  theme(legend.position = "none",
+        plot.title = element_text(hjust = .5)) +
+  theme(text = element_text(size = 20))   
+```
+
+And, of course, you can use standard ggplot graphs too. One useful tip is to tweak the position using both fig.height and out.width in the chunk header:
+
+```{r fig.height=3, out.width='100%', fig.cap="Effects on the poster-building process"}
+tribble(
+  ~Method, ~Work, ~Faffing,
+  "By hand", 10, 90,
+  "Rmarkdown", 40, 40
+) %>%
+  pivot_longer(!Method, names_to="Activity breakdown", values_to = "Time") %>%
+  ggplot() +
+  geom_col(aes(x=Method, y=Time, fill=`Activity breakdown`)) +
+  coord_flip() +
+  scale_fill_manual(values = c("#124987", "#009FE3")) + 
+  theme(text = element_text(size = 20),
+        axis.title.y = element_blank())   
+```
+
+And the usual knitr::kable() data tables work nicely too - although I'd recommend using kableExtra [@kableExtra] to help with styling:
+
+```{r}
+
+read_csv("data/sankey.csv")  %>%
+  select(!Evening) %>%
+  group_by(Day, Bedtime) %>%
+  summarise(n=n()) %>%
+  knitr::kable() %>%
+  kable_minimal(full_width = T, font_size=40)
+
+```
+
+# Conclusions
+
+It's not a perfect approach, but it definitely beats trying to transplant your beautiful visualisations by hand into an A0 Powerpoint.
+
+# References
+
+::: {#refs}
+:::
+
+------------------------------------------------------------------------
+
+```{r out.width='50%', fig.align='center'}
+knitr::include_graphics("images/NES_logo.jpg")
+```
