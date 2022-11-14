@@ -40,7 +40,7 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 library(pacman)
-p_load(tidyverse, waffle, lubridate,kableExtra)
+p_load(tidyverse, waffle,ggalluvial,lubridate,kableExtra, posterdown)
 ```
 
 # Introduction
@@ -101,8 +101,6 @@ waffle(data %>% mutate(n = as.numeric(n)) %>% deframe(), rows=8) +
 These are great for showing flow through a system. Drawn using the ggalluvial package [@ggalluvial]:
 
 ```{r out.width="80%", fig.cap='After-work outcomes', fig.align='center'}
-p_load(ggalluvial)
-
 read_csv("data/sankey.csv") %>%
   count(Day, Evening, Bedtime) %>%
   ggplot(aes(y=n, axis1=Day, axis2=Evening, axis3=Bedtime)) +
