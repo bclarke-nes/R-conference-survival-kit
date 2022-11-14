@@ -33,7 +33,7 @@ bibliography: data/references.bib
 output: 
   posterdown::posterdown_betterport:
   self_contained: TRUE
-knit: pagedown::chrome_print
+#knit: pagedown::chrome_print
 # uncomment the line above to enable rendering to pdf. It requires Chrome - and so won't work on Rstudio cloud.
 ---
 
