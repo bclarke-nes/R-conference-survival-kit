@@ -34,12 +34,13 @@ output:
   posterdown::posterdown_betterport:
   self_contained: TRUE
 knit: pagedown::chrome_print
+# uncomment the line above to enable rendering to pdf. It requires Chrome - and so won't work on Rstudio cloud.
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 library(pacman)
-p_load(tidyverse, waffle, ggsankey,lubridate,kableExtra)
+p_load(tidyverse, waffle, lubridate,kableExtra)
 ```
 
 # Introduction
@@ -80,7 +81,7 @@ To include graphs, work as you would in any other Rmarkdown document, with R cod
 
 Although these are effectively just pie charts, they're still good for showing the distribution of discrete characteristics in small populations. Use the waffle package [@waffle] to produce them.
 
-```{r out.width='70%', fig.cap='Example of an analyst population', fig.align='center'}
+```{r out.width='90%', fig.cap='Example of an analyst population', fig.align='center'}
 data <- tribble(
   ~Classification, ~n,
   "Busy", "32", 
@@ -95,29 +96,27 @@ waffle(data %>% mutate(n = as.numeric(n)) %>% deframe(), rows=8) +
 
 ```
 
-## Sankey plots
+## Alluvial plots
 
-These are great for showing flow through a system. One serious drawback though is that the ggsankey package is rather hard to understand [@ggsankey].
+These are great for showing flow through a system. Drawn using the ggalluvial package [@ggalluvial]:
 
-```{r out.width='100%', fig.cap='After-work outcomes'}
-read_csv("data/sankey.csv")  %>%
-  make_long(Day, Evening, Bedtime) %>%
-  ggplot(aes(x = x, 
-             next_x = next_x, 
-             node = node, 
-             next_node = next_node,
-             label = node)) +
-  geom_sankey(flow.alpha = 0.3, fill = "#009FE3") +
-  geom_sankey_label(size = 4, color = "black", fill="#EAD9AF", space=20) +
+```{r out.width="80%", fig.cap='After-work outcomes', fig.align='center'}
+p_load(ggalluvial)
+
+read_csv("data/sankey.csv") %>%
+  count(Day, Evening, Bedtime) %>%
+  ggplot(aes(y=n, axis1=Day, axis2=Evening, axis3=Bedtime)) +
+  geom_alluvium(aes(fill = Bedtime)) +
+  geom_stratum(width = 1/12, fill = "#009FE3", color = "grey") +
+  geom_label(stat = "stratum", aes(label = after_stat(stratum))) +
+  scale_fill_manual(values = c("#009B55","#F1AF00")) +
   theme_void() +
-  theme(legend.position = "none",
-        plot.title = element_text(hjust = .5)) +
-  theme(text = element_text(size = 20))   
+  theme(legend.position = "none")
 ```
 
 And, of course, you can use standard ggplot graphs too. One useful tip is to tweak the position using both fig.height and out.width in the chunk header:
 
-```{r fig.height=3, out.width='100%', fig.cap="Effects on the poster-building process"}
+```{r fig.height=3, out.width="100%", fig.cap="Effects on the poster-building process"}
 tribble(
   ~Method, ~Work, ~Faffing,
   "By hand", 10, 90,
@@ -129,7 +128,8 @@ tribble(
   coord_flip() +
   scale_fill_manual(values = c("#124987", "#009FE3")) + 
   theme(text = element_text(size = 20),
-        axis.title.y = element_blank())   
+        axis.title.y = element_blank()) +
+  theme(legend.position = "bottom")
 ```
 
 And the usual knitr::kable() data tables work nicely too - although I'd recommend using kableExtra [@kableExtra] to help with styling:
